@@ -26,14 +26,15 @@ function* fetchAllMovies() {
 }
 
 function* getMovieDetails(action) {
-  console.log('Getting Movie Details!!')
+  console.log('Getting Movie Details for movie numnber', action.payload);
   try {
     const response = yield axios({
       method: 'GET',
       url: `/api/movies/${action.payload}`
     })
+    console.log('current movie details: ', response.data);
     yield put({
-      type: 'SET_CURRENT_MOVIE',
+      type: 'SET_CURRENT_MOVIE_DETAILS',
       payload: response.data
     })
   }
@@ -97,12 +98,20 @@ const currentGenres = (state=[], action) => {
   return state;
 }
 
+const currentMovieDetails = (state={}, action) => {
+  if (action.type === 'SET_CURRENT_MOVIE_DETAILS') {
+    return action.payload[0];
+  }
+  return state;
+}
+
 // Create one store that all components can use
 const store = createStore(
   combineReducers({
     movies,
     genres,
     currentMovie,
+    currentMovieDetails,
     currentGenres
   }),
   // Add sagaMiddleware to our store

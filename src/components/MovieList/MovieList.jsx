@@ -18,6 +18,7 @@ const handleClickMovie = (movieId) => {
     type: 'SET_CURRENT_MOVIE',
     payload: {id: movieId}
   })
+  console.log('going to detail!')
   history.push('/detail');
 }
 
@@ -31,7 +32,8 @@ const handleClickMovie = (movieId) => {
               <h3>{movie.title}</h3>
                 <img onClick={() => {handleClickMovie(movie.id)}}
                     src={movie.poster} 
-                    alt={movie.title}/>
+                    alt={movie.title}
+                    data-testid="toDetails"/>
             </div>
           );
         })}

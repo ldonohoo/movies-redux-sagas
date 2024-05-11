@@ -1,15 +1,17 @@
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 
 function MoviesDetail() {
 
-    const history = useHistory();
-    const [movieDetails, setMovieDetails] = useState();
+    const history = useHistory()
+    const dispatch = useDispatch();
+    const movieDetails = useSelector(store => store.currentMovieDetails);
     const currentMovie = useSelector(store => store.currentMovie);
-    const currentGenres = useSelector(store => store.currentGenre);
+    const currentGenres = useSelector(store => store.currentGenres);
 
     useEffect(() => {
+        console.log('current Movie:', currentMovie);
         getMovieDetails();
         getGenres();
     }, []);
@@ -24,18 +26,23 @@ function MoviesDetail() {
 
     const getGenres = () => {
         dispatch({
-            type: 'GET_GENRES_FOR_MOVIE'
+            type: 'GET_GENRES_FOR_MOVIE',
+            payload: currentMovie
         })
+    }
+
+    const backToMovieList = () => {
+        console.log('back to movie list view!')
+        history.push('/');
     }
 
     return (
         <>
-        <p>{JSON.stringify(currentMovie)}</p>
         <div data-testid="movieDetails">
-            <h3>{currentMovie.title}</h3>
+            <h3>{movieDetails.title}</h3>
             <figure>
-                <img src={currentMovie.poster}/>
-                <figcaption>{currentMovie.detail}</figcaption>
+                <img src={movieDetails.poster}/>
+                <figcaption>{movieDetails.description}</figcaption>
             </figure>
             {currentGenres.map(genre => {
                 return (
@@ -44,7 +51,7 @@ function MoviesDetail() {
             })}
         </div>
         <button data-testid="toList"
-                onSubmit={history.push('/')}>back to movie list</button>
+                onClick={backToMovieList}>back to movie list</button>
         </>
     )
 }

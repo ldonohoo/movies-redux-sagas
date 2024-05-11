@@ -23,7 +23,7 @@ router.get('/:id', (req, res) => {
     SELECT * FROM genres
       INNER JOIN movies_genres
       ON genres.id = movies_genres.genre_id
-      WHERE movies_generes.movie_id = $1;
+      WHERE movies_genres.movie_id = $1;
   `;
   pool.query(sqlText, [movieId])
   .then(dbRes => {
