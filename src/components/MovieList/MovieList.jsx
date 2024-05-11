@@ -22,9 +22,14 @@ const handleClickMovie = (movieId) => {
   history.push('/detail');
 }
 
+const handleAddMovie = () => {
+  history.push('/add');
+}
+
   return (
     <main>
       <h1>MovieList</h1>
+      <button onClick={handleAddMovie}>Add Movie</button>
       <section className="movies">
         {movies.map(movie => {
           return (

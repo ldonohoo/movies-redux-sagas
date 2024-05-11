@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Button, TextField } from '@mui/material';
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
+import { useSelector } from 'react-redux';
 
 function AddMovie() {
 
-
+    const genres = useSelector(store => store.genres);
+    const currentGenres = useSelector(store => store.currentGenres)
     let [inputTitle, setInputTitle] = useState('');
     let [inputDescription, setInputDescription] = useState('');
     let [inputFile, setInputFile] = useState(NULL);
     let [inputGenre, setInputGenre] = useState('');
-    let [newGenreList, setNewGenreList] = useState([]);
+    let [newGenreList, setNewGenreList] = useState(currentGenres);
 
     const history = useHistory();
 
@@ -32,6 +34,9 @@ function AddMovie() {
             payload: formData
         })
         history.push('/');
+
+
+        // move to store.js...
         axios({
             method: 'POST',
             url: `http://localhost:5001/api/gallery`,
@@ -78,24 +83,23 @@ function AddMovie() {
                   <input id="file-upload"
                          type="file"
                          onChange={(e) => {setInputFile(e.target.files[0])}}/>
-                    <Select>
-                        <MenuItem>
-                        
-                        </MenuItem>
+                    {/* go through list of available genres */}
+                    <Select>{genres.map(genre => {
+                      return (
+                        <MenuItem>{genre.name}</MenuItem>
+                      )
+                    })}
+           
                     </Select>
                   <Button type="submit"
                           variant='contained'>Add Item</Button>
-                  
               </form>
-              <p id="add-form-genres">{newGenreList.map(genre => {
-                    return (
-                        <MenuItem>
-                            <p>{genre.name}</p>
-                        </MenuItem>
-                    )
-                })
-                <Select>
-                </p>
+              <p id="add-form-genres">{newGenreList.map(newGenre => {
+                    // display list of current selected genres
+                    return ( 
+                        <span>{newGenre.name}</span>
+                    )})}
+              </p>
           </>
       )
   }

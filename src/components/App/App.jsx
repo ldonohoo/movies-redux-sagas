@@ -14,6 +14,9 @@ function App() {
         <Route path="/detail">
           <MoviesDetail />
         </Route>
+        <Route path="/add">
+          <MoviesDetail />
+        </Route>
     </div>
   )
 }
