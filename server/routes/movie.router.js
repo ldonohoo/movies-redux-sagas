@@ -15,8 +15,24 @@ router.get('/', (req, res) => {
       console.log('ERROR: Get all movies', err);
       res.sendStatus(500)
     })
-
 });
+
+router.get('/:id', (req, res) => {
+  const movieId = req.params.id;
+  const query=`
+    SELECT * FROM movies
+      WHERE id = $1;
+  `;
+  pool.query(query, [movieId])
+  .then(dbRes => {
+    console.log('GET of single movie details in /api/movies/:id sucessful!');
+    res.send(dbRes.rows);
+  })
+  .catch(dbErr => {
+    console.log('GET of single movie details in /api/movies/:id went very poorly:', dbErr);
+    res.sendStatus(500);
+  })
+})
 
 router.post('/', (req, res) => {
   console.log(req.body);
