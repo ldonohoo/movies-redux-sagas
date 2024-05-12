@@ -49,13 +49,13 @@ router.get('/search_sort/', (req, res) => {
       sortString = 'title ASC';
       break;
     case 'title_descending':
-      sortString = 'title DEC';
+      sortString = 'title DESC';
       break;
     case 'first_added':
       sortString = 'id ASC';
       break;
     case 'last_added':
-      sortString = 'id DEC';
+      sortString = 'id DESC';
       break;
   }
   let searchString = '';

@@ -43,6 +43,15 @@ const handleSearch = () => {
    });
 };
 
+const handleSelectSort = (event) => {
+  let sort = event.target.value;
+  dispatch({ 
+    type: 'FETCH_SEARCH_SORT_MOVIES', 
+    payload: {q: inputSearch, sort: sort}
+   });
+   setSelectedSort(sort);
+}
+
   return (
     <main>
       <h1>MovieList</h1>
@@ -56,6 +65,16 @@ const handleSearch = () => {
               onClick={handleSearch}>Search</Button>
       <Button variant='contained'
               onClick={handleAddMovie}>Add Movie</Button>
+      <Select labelId="select-category"
+              value={selectedSort}
+              onChange={handleSelectSort}>
+                  return (
+                        <MenuItem value="title_ascending">Title ascending</MenuItem>
+                        <MenuItem value="title_descending">Title decending</MenuItem>
+                        <MenuItem value="first_added">First added</MenuItem>
+                        <MenuItem value="last_added">Last added</MenuItem>
+                  )
+      </Select>
       <section className="movies">
         {movies.map(movie => {
           return (
