@@ -58,6 +58,10 @@ function AddMovie() {
         setNewGenres(filteredGenresArray);
       }
 
+      const handleCancel = () => {
+        history.push('/');
+      }
+
       return (
           <>
               <h2>Add a Movie</h2>
@@ -93,8 +97,13 @@ function AddMovie() {
                     })}
                     </Select>
                   <Button type="submit"
-                          variant='contained'>Add Item</Button>
+                          variant='contained'>Add</Button>
+                  <Button type="button"
+                          variant='contained'
+                          onClick={handleCancel}>Cancel
+                  </Button>
               </form>
+      
               <h4 id="add-form-genres">{newGenres.map(newGenre => {
                     // display list of current selected genres
                     const matchingGenre = genres.find(g => g.id === newGenre);

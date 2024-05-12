@@ -19,7 +19,7 @@ const handleClickMovie = (movieId) => {
     payload: {id: movieId}
   })
   console.log('going to detail!')
-  history.push('/detail');
+  history.push(`/detail/${movieId}`);
 }
 
 const handleAddMovie = () => {

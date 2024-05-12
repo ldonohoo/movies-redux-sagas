@@ -125,13 +125,6 @@ const genres = (state=[], action) => {
   }
 }
 
-const currentMovie = (state='', action) => {
-  if (action.type === 'SET_CURRENT_MOVIE') {
-    return action.payload.id;
-  }
-  return state;
-}
-
 const currentGenres = (state=[], action) => {
   if (action.type === 'SET_CURRENT_GENRES') {
     return action.payload;
@@ -151,7 +144,6 @@ const store = createStore(
   combineReducers({
     movies,
     genres,
-    currentMovie,
     currentMovieDetails,
     currentGenres
   }),

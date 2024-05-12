@@ -1,14 +1,18 @@
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+
 
 function MoviesDetail() {
 
     const history = useHistory()
     const dispatch = useDispatch();
     const movieDetails = useSelector(store => store.currentMovieDetails);
-    const currentMovie = useSelector(store => store.currentMovie);
     const currentGenres = useSelector(store => store.currentGenres);
+    const { id } = useParams();
+    console.log(id);
+    const currentMovie = id;
 
     useEffect(() => {
         console.log('current Movie:', currentMovie);
