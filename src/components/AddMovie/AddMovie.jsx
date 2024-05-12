@@ -15,18 +15,11 @@ function AddMovie() {
     let [newGenres, setNewGenres] = useState([]);
     const genres = useSelector(store => store.genres);
 
-    let [selectOptionGenres, setSelectOptionGenres] = useState([]);
-
     const history = useHistory();
 
     useEffect(() => {
       fetchGenres()
     }, []);
-
-    useEffect(() => {
-      setSelectOptionGenres(genres);
-    },[genres]);
-
 
     const dispatch = useDispatch();
 
@@ -34,8 +27,6 @@ function AddMovie() {
     const fetchGenres = () => {
       dispatch({ type: 'FETCH_GENRES' })
     }
-
-
 
     const handleAddMovie = (e) => {
         e.preventDefault();
@@ -49,30 +40,6 @@ function AddMovie() {
         })
         history.push('/');
     }
-
-
-        // move to store.js...
-      //   axios({
-      //       method: 'POST',
-      //       url: `http://localhost:5001/api/gallery`,
-      //       data: formData, 
-      //       headers: {'Content-Type': 'multipart/form-data'}
-      //     })
-      //       .then(response => {
-      //         console.log('Item uploaded successfully');
-      //         console.log('Url of filename saved: ', response.data.filename);
-      //         // Clear the form fields and file after successful submission
-      //         setInputTitle('');
-      //         setInputDescription('');
-      //         setInputFile(); 
-      //         // close the modal (function defined in the modal component:
-      //         //                    AddGalleryItemModal                    )
-      //         closeModalAndFetch();
-      //       })
-      //       .catch(error => { 
-      //         console.log('Item upload failed!', error);
-      //       });
-      // }
   
        /**
        * Component render return (what the component AddItemForm renders)
@@ -83,10 +50,13 @@ function AddMovie() {
         // add selected option to current selected genres
         const genreReset = [...newGenres, genreToAdd];
         setNewGenres(genreReset);
-        const selectGenreReset = selectOptionGenres.filter(genre => genre !== genreToAdd);
-        setSelectOptionGenres(selectGenreReset);
       }
 
+      const handleGenreRemove = (genreId) => {
+        let filteredGenresArray = [];
+        filteredGenresArray = newGenres.filter(g => g !== genreId);
+        setNewGenres(filteredGenresArray);
+      }
 
       return (
           <>
@@ -125,15 +95,18 @@ function AddMovie() {
                   <Button type="submit"
                           variant='contained'>Add Item</Button>
               </form>
-              <span>{JSON.stringify(newGenres)}</span>
-              <span>{JSON.stringify(newGenres)}</span>
-              <p id="add-form-genres">{newGenres.map(newGenre => {
+              <h4 id="add-form-genres">{newGenres.map(newGenre => {
                     // display list of current selected genres
+                    const matchingGenre = genres.find(g => g.id === newGenre);
                     return ( 
-                      <span>{genres.find(newGenre)}</span>
+                      <p key={matchingGenre.id}>{matchingGenre.name}
+                        <span>
+                          <button onClick={() => {handleGenreRemove(matchingGenre.id)}}>| X</button>
+                        </span>
+                      </p>
                     )
                   })}
-              </p>
+              </h4>
 
           </>
       )
