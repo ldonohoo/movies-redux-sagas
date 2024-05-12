@@ -7,6 +7,7 @@ import axios from 'axios';
 // Create the rootSaga generator function
 function* rootSaga() {
   yield takeEvery('FETCH_MOVIES', fetchAllMovies);
+  yield takeEvery('FETCH_SEARCH_SORT_MOVIES', fetchSearchSortMovies);
   yield takeEvery('FETCH_GENRES', fetchAllGenres);
   yield takeEvery('ADD_MOVIE', addMovie);
   yield takeEvery('GET_MOVIE_DETAILS', getMovieDetails);
@@ -17,6 +18,23 @@ function* fetchAllMovies() {
   try {
     // Get the movies:
     const moviesResponse = yield axios.get('/api/movies');
+    // Set the value of the movies reducer:
+    yield put({
+      type: 'SET_MOVIES',
+      payload: moviesResponse.data
+    });
+  } catch (error) {
+    console.log('fetchAllMovies error:', error);
+  }
+}
+
+function* fetchSearchSortMovies(action) {
+  try {
+    const searchString = action.payload.q;
+    const sortString = action.payload.sort;
+    // Get the movies:
+    const moviesResponse =
+        yield axios.get(`/api/movies/search_sort/?q=${searchString}&sort=${sortString}`);
     // Set the value of the movies reducer:
     yield put({
       type: 'SET_MOVIES',

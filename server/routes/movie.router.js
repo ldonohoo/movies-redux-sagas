@@ -39,6 +39,49 @@ router.get('/', (req, res) => {
     })
 });
 
+router.get('/search_sort/', (req, res) => {
+  const search = req.query.q;
+  const sort = req.query.sort;
+  console.log('search, sort', search, sort);
+  let sortString = 'title_ascending';
+  switch (sort) {
+    case 'title_ascending':
+      sortString = 'title ASC';
+      break;
+    case 'title_descending':
+      sortString = 'title DEC';
+      break;
+    case 'first_added':
+      sortString = 'id ASC';
+      break;
+    case 'last_added':
+      sortString = 'id DEC';
+      break;
+  }
+  let searchString = '';
+  let queryParams = [];
+  if (search) {
+    searchString = "WHERE title LIKE $1";
+    // Add wildcards to the search string
+    queryParams.push(`%${search}%`);
+  } 
+  const query = `
+    SELECT * FROM movies
+    ${searchString}
+    ORDER BY ${sortString};
+  `;
+  console.log(query)
+  pool.query(query, queryParams)
+    .then(result => {
+      res.send(result.rows);
+    })
+    .catch(err => {
+      console.log('ERROR: Get all movies', err);
+      res.sendStatus(500)
+    })
+});
+
+
 router.get('/:id', (req, res) => {
   const movieId = req.params.id;
   const query=`
