@@ -2,6 +2,7 @@ import './App.css';
 import { HashRouter as Router, Route } from 'react-router-dom';
 import MovieList from '../MovieList/MovieList';
 import MoviesDetail from '../MoviesDetail/MoviesDetail';
+import AddMovie from '../AddMovie/AddMovie';
 
 
 function App() {
@@ -15,7 +16,7 @@ function App() {
           <MoviesDetail />
         </Route>
         <Route path="/add">
-          <MoviesDetail />
+          <AddMovie />
         </Route>
     </div>
   )

@@ -1,67 +1,93 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import { Button, TextField } from '@mui/material';
+import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
+import { Button, TextField, Select, MenuItem } from '@mui/material';
 
 function AddMovie() {
 
-    const genres = useSelector(store => store.genres);
-    const currentGenres = useSelector(store => store.currentGenres)
+    // const currentGenres = useSelector(store => store.currentGenres)
     let [inputTitle, setInputTitle] = useState('');
     let [inputDescription, setInputDescription] = useState('');
-    let [inputFile, setInputFile] = useState(NULL);
-    let [inputGenre, setInputGenre] = useState('');
-    let [newGenreList, setNewGenreList] = useState(currentGenres);
+    let [inputPosterFile, setInputPosterFile] = useState();
+    let [selectedGenre, setSelectedGenre] = useState('');
+
+    // new genres to save to movie
+    let [newGenres, setNewGenres] = useState([]);
+    const genres = useSelector(store => store.genres);
+
+    let [selectOptionGenres, setSelectOptionGenres] = useState([]);
 
     const history = useHistory();
 
+    useEffect(() => {
+      fetchGenres()
+    }, []);
+
+    useEffect(() => {
+      setSelectOptionGenres(genres);
+    },[genres]);
+
+
+    const dispatch = useDispatch();
+
+
+    const fetchGenres = () => {
+      dispatch({ type: 'FETCH_GENRES' })
+    }
+
+
+
     const handleAddMovie = (e) => {
         e.preventDefault();
-        // must make a new FormData object to send the file data in
-        const formData = new FormData();
-        // move the current value of inputFile into fileData
-        const fileData = inputFile;
-        // add the file, title and description to formData to prepare to send
-        formData.append('file', fileData);
-        formData.append('title', inputTitle);
-        formData.append('description', inputDescription);
-        formData.append('genres', newGenreList);
-        // post the formData with axios
-        //    -need a Content type header to indicate multipart form data
+        console.log(JSON.stringify(newGenres))
         dispatch({
             type: 'ADD_MOVIE',
-            payload: formData
+            payload: { file: inputPosterFile, 
+                       title: inputTitle,
+                       description: inputDescription,
+                       genres: [1, 2, 3] }
         })
         history.push('/');
+    }
 
 
         // move to store.js...
-        axios({
-            method: 'POST',
-            url: `http://localhost:5001/api/gallery`,
-            data: formData, 
-            headers: {'Content-Type': 'multipart/form-data'}
-          })
-            .then(response => {
-              console.log('Item uploaded successfully');
-              console.log('Url of filename saved: ', response.data.filename);
-              // Clear the form fields and file after successful submission
-              setInputTitle('');
-              setInputDescription('');
-              setInputFile(); 
-              // close the modal (function defined in the modal component:
-              //                    AddGalleryItemModal                    )
-              closeModalAndFetch();
-            })
-            .catch(error => { 
-              console.log('Item upload failed!', error);
-            });
-      }
+      //   axios({
+      //       method: 'POST',
+      //       url: `http://localhost:5001/api/gallery`,
+      //       data: formData, 
+      //       headers: {'Content-Type': 'multipart/form-data'}
+      //     })
+      //       .then(response => {
+      //         console.log('Item uploaded successfully');
+      //         console.log('Url of filename saved: ', response.data.filename);
+      //         // Clear the form fields and file after successful submission
+      //         setInputTitle('');
+      //         setInputDescription('');
+      //         setInputFile(); 
+      //         // close the modal (function defined in the modal component:
+      //         //                    AddGalleryItemModal                    )
+      //         closeModalAndFetch();
+      //       })
+      //       .catch(error => { 
+      //         console.log('Item upload failed!', error);
+      //       });
+      // }
   
        /**
        * Component render return (what the component AddItemForm renders)
-       */
+        */
+      const handleGenreSelect = (event) => {
+        // save genre selected with dropdown
+        const genreToAdd = event.target.value;
+        // add selected option to current selected genres
+        const genreReset = [...newGenres, genreToAdd];
+        setNewGenres(genreReset);
+        const selectGenreReset = selectOptionGenres.filter(genre => genre !== genreToAdd);
+        setSelectOptionGenres(selectGenreReset);
+      }
+
+
       return (
           <>
               <h2>Add a Movie</h2>
@@ -82,33 +108,35 @@ function AddMovie() {
                   <label htmlFor='file-upload'></label>
                   <input id="file-upload"
                          type="file"
-                         onChange={(e) => {setInputFile(e.target.files[0])}}/>
+                         onChange={(e) => {setInputPosterFile(e.target.files[0])}}/>
                     {/* go through list of available genres */}
-                    <Select>{genres.map(genre => {
+                  {inputPosterFile ? <img src={inputPosterFile}/> : ''}                    
+                    <Select value={selectedGenre}
+                            onChange={handleGenreSelect}
+                            >{genres.map((genre) => {
                       return (
-                        <MenuItem>{genre.name}</MenuItem>
+                        <MenuItem key={genre.id}
+                                  value={genre.id}
+                                  disabled={ newGenres.includes(genre.id) ? true : false } 
+                          >{genre.name}</MenuItem>
                       )
                     })}
-           
                     </Select>
                   <Button type="submit"
                           variant='contained'>Add Item</Button>
               </form>
-              <p id="add-form-genres">{newGenreList.map(newGenre => {
+              <span>{JSON.stringify(newGenres)}</span>
+              <span>{JSON.stringify(newGenres)}</span>
+              <p id="add-form-genres">{newGenres.map(newGenre => {
                     // display list of current selected genres
                     return ( 
-                        <span>{newGenre.name}</span>
-                    )})}
+                      <span>{genres.find(newGenre)}</span>
+                    )
+                  })}
               </p>
+
           </>
       )
   }
-  
-
-
-
-
-
-}
 
 export default AddMovie;

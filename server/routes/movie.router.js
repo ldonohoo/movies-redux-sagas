@@ -1,6 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../modules/pool')
+const pool = require('../modules/pool');
+// load multer to handle file uploads
+const multer  = require('multer');
+
+
+// This sets up the type of storage used, there are two other options I think?
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    // the destination for the file upload is declared below.
+    //    the null is some sore of error msg or handling??
+    return cb(null, './public/images')
+  },
+  filename: (req, file, cb) => {
+    // the filename is compiled below, it's:
+    //   <current date time stamp> + <underscore> + <filename uploaded>
+    return cb(null, `${Date.now()}_${file.originalname}`)
+ }
+});
+
+// declares the upload to go use the defined storage above
+const upload = multer({storage: storage});
+
+
 
 router.get('/', (req, res) => {
   const query = `
@@ -34,9 +56,23 @@ router.get('/:id', (req, res) => {
   })
 })
 
-router.post('/', (req, res) => {
-  console.log(req.body);
-  // RETURNING "id" will give us back the id of the created movie
+// POST /gallery 
+//             - saves poster/file image to images folder
+//               (uses Multer to grab image file from part of formData object)
+//             - saves movie to the movies table
+//             - saves genres for new movie to the movies_genres table
+router.post('/', upload.single('file'), (req, res) => {
+  console.log('req.body the text fields:', JSON.stringify(req.body));  
+  const filename = req.file.filename;
+  console.log('filename:', req.file.filename);
+  const newMovieTitle = req.body.title;
+  const newMovieDescription = req.body.description;
+  const newGenres = req.body.genres;
+  console.log('newGenres:', newGenres)
+  console.log( ' adding new movie: ', filename, newMovieTitle, newMovieDescription, newGenres[0]);
+  // add the path to the filename before sending to database
+  const filenameUrl = `images/${filename}`;
+    console.log('Adding movie: ',newMovieTitle, newMovieDescription, newGenres[0], filename);
   const insertMovieQuery = `
     INSERT INTO "movies" 
       ("title", "poster", "description")
@@ -46,29 +82,30 @@ router.post('/', (req, res) => {
   `;
   const insertMovieValues = [
     req.body.title,
-    req.body.poster,
+    filenameUrl,  //this is the poster (image name)
     req.body.description
   ]
-  // FIRST QUERY MAKES MOVIE
   pool.query(insertMovieQuery, insertMovieValues)
     .then(result => {
-      // ID IS HERE!
       console.log('New Movie Id:', result.rows[0].id);
       const createdMovieId = result.rows[0].id
-
-      // Now handle the genre reference:
+      // add the new genres for new movie into the movies_genres list
+      //    unnest- unnests a list so allows n inserts for list length n
+      //    ::INTEGER type casts to integer, string_to_array forces string to 
+      //        array splitting on delimiter ','
       const insertMovieGenreQuery = `
-        INSERT INTO "movies_genres" 
-          ("movie_id", "genre_id")
-          VALUES
-          ($1, $2);
+      INSERT INTO movies_genres 
+          (movie_id, genre_id)
+        SELECT 
+          $1 AS movie_id, 
+          unnest(string_to_array($2, ','))::INTEGER AS genre_id;
       `;
-      const insertMovieGenreValues = [
-        createdMovieId,
-        req.body.genre_id
-      ]
-      // SECOND QUERY ADDS GENRE FOR THAT NEW MOVIE
-      pool.query(insertMovieGenreQuery, insertMovieGenreValues)
+        const insertMovieGenreValues = [
+          createdMovieId,
+          newGenres
+        ]
+        // SECOND QUERY ADDS GENRE FOR THAT NEW MOVIE
+        pool.query(insertMovieGenreQuery, insertMovieGenreValues)
         .then(result => {
           //Now that both are done, send back success!
           res.sendStatus(201);
@@ -82,5 +119,54 @@ router.post('/', (req, res) => {
       res.sendStatus(500)
     })
 })
+
+
+
+
+
+
+//---------ROUTES!----------------------------------------------------------
+
+// // POST /gallery --NOW with Multer!!! Yay!!!
+// router.post('/', upload.single('file'), (req, res) => {
+//   // The data comes up in two parts:
+//   //    req.body contains the two text fields saved
+//   //       in 'title' & 'description'
+//   //    req.file contains the FormData object which is the actual file
+//   //       it was stored in 'file'
+//   //  below is view of whole body and file objects
+//   console.log('req.body the text fields:', req.body);  
+//   console.log('req.file the file object:', req.file);  
+//   // This is how you pull the filename, it comes through as req.file.filename
+//   console.log('filename:', req.file.filename);
+//   // set all three fields to send to the database
+//   const filename = req.file.filename;
+//   const newFileTitle = req.body.title;
+//   const newFileDescription = req.body.description;
+//   // add the path to the filename before sending to database
+//   const filenameUrl = `images/${filename}`;
+//     console.log('Adding gallery item: ',
+//         newFileTitle, newFileDescription, filename);
+//     sqlText = `
+//         INSERT INTO gallery
+//           (title, description, url)
+//           VALUES ($1, $2, $3);
+//     `;
+//     pool.query(sqlText, [newFileTitle,
+//                          newFileDescription, 
+//                          filenameUrl])
+//     .then(dbRes => {
+//       console.log('POST in api/gallery completed succussfully!');
+//       // on a successful POST send back the new filename you just created 
+//       //     why?  I don't know for fun.  at first I thought I needed this info
+//       res.send({filenameUrl: filenameUrl});
+//     })
+//     .catch(dbErr=> {
+//       console.log('POST in api/gallery failed miserably:', dbErr);
+//       res.sendStatus(500);
+//     })
+//   });
+
+
 
 module.exports = router;
