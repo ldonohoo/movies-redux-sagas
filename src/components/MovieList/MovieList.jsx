@@ -23,7 +23,7 @@ const handleClickMovie = (movieId) => {
 }
 
 const handleAddMovie = () => {
-  history.push('/add');
+  history.push(`/add_edit/add`);
 }
 
   return (

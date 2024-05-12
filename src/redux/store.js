@@ -10,7 +10,7 @@ function* rootSaga() {
   yield takeEvery('FETCH_GENRES', fetchAllGenres);
   yield takeEvery('ADD_MOVIE', addMovie);
   yield takeEvery('GET_MOVIE_DETAILS', getMovieDetails);
-  yield takeEvery('GET_GENRES_FOR_MOVIE', getGenresForMovie)
+  yield takeEvery('GET_GENRES_FOR_MOVIE', getGenresForMovie);
 }
 
 function* fetchAllMovies() {
