@@ -1,14 +1,18 @@
 import { useHistory } from "react-router-dom/cjs/react-router-dom.min";
 import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom/cjs/react-router-dom.min";
+import { Button } from '@mui/material';
 
 function MoviesDetail() {
 
     const history = useHistory()
     const dispatch = useDispatch();
     const movieDetails = useSelector(store => store.currentMovieDetails);
-    const currentMovie = useSelector(store => store.currentMovie);
     const currentGenres = useSelector(store => store.currentGenres);
+    const { id } = useParams();
+    console.log(id);
+    const currentMovie = id;
 
     useEffect(() => {
         console.log('current Movie:', currentMovie);
@@ -36,6 +40,11 @@ function MoviesDetail() {
         history.push('/');
     }
 
+    const editMovie = () => {
+        console.log('edit a movie!')
+        history.push(`/add_edit/${movieDetails.id}`);
+    }
+
     return (
         <>
         <div data-testid="movieDetails">
@@ -43,15 +52,16 @@ function MoviesDetail() {
             <figure>
                 <img src={movieDetails.poster}/>
                 <figcaption>{movieDetails.description}</figcaption>
+                <Button onClick={editMovie}>Edit Movie</Button>
             </figure>
             {currentGenres.map(genre => {
                 return (
-                    <p key={genre.id}>{genre.name}</p>
+                        <p key={genre.id}>{genre.name}</p>
                 )
             })}
         </div>
-        <button data-testid="toList"
-                onClick={backToMovieList}>back to movie list</button>
+        <Button data-testid="toList"
+                onClick={backToMovieList}>Back to Movie List</Button>
         </>
     )
 }

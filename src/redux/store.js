@@ -7,8 +7,12 @@ import axios from 'axios';
 // Create the rootSaga generator function
 function* rootSaga() {
   yield takeEvery('FETCH_MOVIES', fetchAllMovies);
+  yield takeEvery('FETCH_SEARCH_SORT_MOVIES', fetchSearchSortMovies);
+  yield takeEvery('FETCH_GENRES', fetchAllGenres);
+  yield takeEvery('ADD_MOVIE', addMovie);
+  yield takeEvery('UPDATE_MOVIE', updateMovie);
   yield takeEvery('GET_MOVIE_DETAILS', getMovieDetails);
-  yield takeEvery('GET_GENRES_FOR_MOVIE', getGenresForMovie)
+  yield takeEvery('GET_GENRES_FOR_MOVIE', getGenresForMovie);
 }
 
 function* fetchAllMovies() {
@@ -24,6 +28,39 @@ function* fetchAllMovies() {
     console.log('fetchAllMovies error:', error);
   }
 }
+
+function* fetchSearchSortMovies(action) {
+  try {
+    const searchString = action.payload.q;
+    const sortString = action.payload.sort;
+    // Get the movies:
+    const moviesResponse =
+        yield axios.get(`/api/movies/search_sort/?q=${searchString}&sort=${sortString}`);
+    // Set the value of the movies reducer:
+    yield put({
+      type: 'SET_MOVIES',
+      payload: moviesResponse.data
+    });
+  } catch (error) {
+    console.log('fetchAllMovies error:', error);
+  }
+}
+
+
+function* fetchAllGenres() {
+  try {
+    // Get the possible genres:
+    const response = yield axios.get('/api/genres');
+    // Set the value of the movies reducer:
+    yield put({
+      type: 'SET_GENRES',
+      payload: response.data
+    });
+  } catch (error) {
+    console.log('fetchAllGenres error:', error);
+  }
+}
+
 
 function* getMovieDetails(action) {
   console.log('Getting Movie Details for movie numnber', action.payload);
@@ -60,6 +97,58 @@ function* getGenresForMovie(action) {
   }
 }
 
+function* addMovie(action) {
+  console.log('Adding a new movie!', JSON.stringify(action.payload));
+  try {
+    // must make a new FormData object to send the file data in
+    const formData = new FormData();
+    // add the file, title and description to formData to prepare to send
+    formData.append('file', action.payload.file);
+    formData.append('title', action.payload.title);
+    formData.append('description', action.payload.description);
+    formData.append('genres', action.payload.genres);
+    // post the formData with axios
+    //    -need a Content type header to indicate multipart form data
+    yield axios({
+      method: 'POST',
+      url: '/api/movies',
+      data: formData
+    })
+    yield put({ type: 'FETCH_MOVIES' });
+  }
+  catch(error) {
+    console.log('Error addin a new movie', error);
+  }
+}
+
+function* updateMovie(action) {
+  console.log('Updating a movie!', JSON.stringify(action.payload));
+  try {
+    // must make a new FormData object to send the file data in
+    const formData = new FormData();
+    // add the file, title and description to formData to prepare to send
+    const movieId = action.payload.id;
+    formData.append('fileChanged', action.payload.filechanged);
+    formData.append('id', action.payload.id);
+    formData.append('file', action.payload.file);
+    formData.append('title', action.payload.title);
+    formData.append('description', action.payload.description);
+    formData.append('genres', action.payload.genres);
+    // post the formData with axios
+    //    -need a Content type header to indicate multipart form data
+    yield axios({
+      method: 'PUT',
+      url: `/api/movies`,
+      data: formData
+    })
+    yield put({ type: 'FETCH_MOVIES' });
+  }
+  catch(error) {
+    console.log('Error addin a new movie', error);
+  }
+}
+
+
 
 // Create sagaMiddleware
 const sagaMiddleware = createSagaMiddleware();
@@ -84,13 +173,6 @@ const genres = (state=[], action) => {
   }
 }
 
-const currentMovie = (state='', action) => {
-  if (action.type === 'SET_CURRENT_MOVIE') {
-    return action.payload.id;
-  }
-  return state;
-}
-
 const currentGenres = (state=[], action) => {
   if (action.type === 'SET_CURRENT_GENRES') {
     return action.payload;
@@ -110,7 +192,6 @@ const store = createStore(
   combineReducers({
     movies,
     genres,
-    currentMovie,
     currentMovieDetails,
     currentGenres
   }),
