@@ -223,17 +223,17 @@ router.put('/', upload.single('file'), (req, res) => {
             res.sendStatus(201);
           }).catch(err => {
             // catch for third query
-            console.log(err);
+            console.log('Error in insert of genres', err);
             res.sendStatus(500)
         })
       }).catch(err => { 
         // catch for second query
-        console.log(err);
+        console.log('Error in delete of genres', err);
         res.sendStatus(500)
      })
     }).catch(err => { 
       // catch for first query
-      console.log(err);
+      console.log('Error in update of movies', err);
       res.sendStatus(500)
     })
 })
