@@ -55,6 +55,7 @@ function AddMovie() {
     let [inputDescription, setInputDescription] = useState(movieDetails.description || '');
     let [inputPosterFile, setInputPosterFile] = useState(movieDetails.poster || '');
     let [selectedGenre, setSelectedGenre] = useState('');
+    let [fileChanged, setFileChanged] = useState(false);
 
     const history = useHistory();
     const dispatch = useDispatch();
@@ -65,7 +66,6 @@ function AddMovie() {
 
     const handleAddSaveMovie = (e) => {
         e.preventDefault();
-        // console.log(JSON.stringify(newGenres))
         if (mode === 'add') {
           dispatch({
               type: 'ADD_MOVIE',
@@ -77,12 +77,16 @@ function AddMovie() {
         } else {
           dispatch({
             type: 'UPDATE_MOVIE',
-            payload: { file: inputPosterFile, 
+            payload: { 
+                       file: inputPosterFile, 
                        title: inputTitle,
                        description: inputDescription,
-                       genres: currentGenres }
+                       genres: currentGenres,
+                       id: currentMovie,
+                       fileChanged: fileChanged }
           })
         }
+        setFileChanged(false);
         history.push('/');
     }
   
@@ -118,6 +122,14 @@ function AddMovie() {
         history.push('/');
       }
 
+      const handleFileSelect = (event) => {
+        setInputPosterFile(event.target.files[0]);
+        if (selectedFile !== inputPosterFile) {
+          setInputPosterFile(selectedFile);
+          setFileChanged(true);
+        }
+      }
+
       return (
           <>
               <h2>Add a Movie</h2>
@@ -138,7 +150,7 @@ function AddMovie() {
                   <label htmlFor='file-upload'></label>
                   <input id="file-upload"
                          type="file"
-                         onChange={(e) => {setInputPosterFile(e.target.files[0])}}/>
+                         onChange={handleFileSelect}/>
                     {/* go through list of available genres */}
                   {inputPosterFile ? <img src={inputPosterFile}/> : ''}                    
                     <Select value={selectedGenre}

@@ -10,6 +10,7 @@ function* rootSaga() {
   yield takeEvery('FETCH_SEARCH_SORT_MOVIES', fetchSearchSortMovies);
   yield takeEvery('FETCH_GENRES', fetchAllGenres);
   yield takeEvery('ADD_MOVIE', addMovie);
+  yield takeEvery('UPDATE_MOVIE', updateMovie);
   yield takeEvery('GET_MOVIE_DETAILS', getMovieDetails);
   yield takeEvery('GET_GENRES_FOR_MOVIE', getGenresForMovie);
 }
@@ -119,6 +120,35 @@ function* addMovie(action) {
     console.log('Error addin a new movie', error);
   }
 }
+
+function* updateMovie(action) {
+  console.log('Updating a movie!', JSON.stringify(action.payload));
+  try {
+    // must make a new FormData object to send the file data in
+    const formData = new FormData();
+    // add the file, title and description to formData to prepare to send
+    const movieId = action.payload.id;
+    formData.append('fileChanged', action.payload.filechanged);
+    formData.append('id', action.payload.id);
+    formData.append('file', action.payload.file);
+    formData.append('title', action.payload.title);
+    formData.append('description', action.payload.description);
+    formData.append('genres', action.payload.genres);
+    // post the formData with axios
+    //    -need a Content type header to indicate multipart form data
+    yield axios({
+      method: 'PUT',
+      url: `/api/movies`,
+      data: formData
+    })
+    yield put({ type: 'FETCH_MOVIES' });
+  }
+  catch(error) {
+    console.log('Error addin a new movie', error);
+  }
+}
+
+
 
 // Create sagaMiddleware
 const sagaMiddleware = createSagaMiddleware();

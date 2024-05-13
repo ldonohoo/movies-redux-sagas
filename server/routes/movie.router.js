@@ -23,7 +23,6 @@ const storage = multer.diskStorage({
 const upload = multer({storage: storage});
 
 
-
 router.get('/', (req, res) => {
   const query = `
     SELECT * FROM "movies"
@@ -163,7 +162,81 @@ router.post('/', upload.single('file'), (req, res) => {
     })
 })
 
+router.put('/', upload.single('file'), (req, res) => {
+  console.log('req.body the text fields:', JSON.stringify(req.body));  
+  const hasFilename = req.body.filechanged === 'false' ? false : true;
+  console.log('filechanged', hasFilename);
 
+  if (hasFilename) {
+    console.log('here')
+    const filename = req.file.filename;
+    console.log('filename:', req.file.filename);
+    const filenameUrl = `images/${filename}`;
+  }
+  const newMovieTitle = req.body.title;
+  const newMovieDescription = req.body.description;
+  const newGenres = req.body.genres;
+  const movieId = req.body.id;
+  console.log('newGenres:', newGenres)
+  console.log( ' adding new movie: ', newMovieTitle, newMovieDescription, newGenres[0]);
+  // add the path to the filename before sending to database
+  console.log('Updating movie: ',newMovieTitle, newMovieDescription, newGenres[0]);
+  let fileString = hasFilename ? 'poster = $2,' : '';
+  const insertMovieQuery = `
+    UPDATE movies 
+      SET title = $1,
+          ${fileString}
+          description = $3
+      WHERE id = $4;
+  `;
+  const insertMovieValues = [
+    req.body.title,
+    fileString, 
+    req.body.description,
+    movieId
+  ]
+  pool.query(insertMovieQuery, insertMovieValues)
+    .then(result => {
+      // SECOND QUERY to delete all items in the movies_genres table 
+      //    as we are doing a full replace of the movies_genres items
+      const deleteMovieGenreQuery = `
+      DELETE movies_genres
+      WHERE movie_id = $1;
+      `;
+      pool.query(deleteMovieGenreQuery, [movieId])
+      .then(deleteResult => {
+        const insertMovieGenreQuery = `
+        INSERT INTO movies_genres 
+            (movie_id, genre_id)
+          SELECT 
+            $1 AS movie_id, 
+            unnest(string_to_array($2, ','))::INTEGER AS genre_id;
+        `;
+          const insertMovieGenreValues = [
+            movieId,
+            newGenres
+          ]
+          // THIRD QUERY ADDS GENRE FOR THAT NEW MOVIE
+          pool.query(insertMovieGenreQuery, insertMovieGenreValues)
+          .then(result => {
+            //Now that both are done, send back success!
+            res.sendStatus(201);
+          }).catch(err => {
+            // catch for third query
+            console.log(err);
+            res.sendStatus(500)
+        })
+      }).catch(err => { 
+        // catch for second query
+        console.log(err);
+        res.sendStatus(500)
+     })
+    }).catch(err => { 
+      // catch for first query
+      console.log(err);
+      res.sendStatus(500)
+    })
+})
 
 
 
