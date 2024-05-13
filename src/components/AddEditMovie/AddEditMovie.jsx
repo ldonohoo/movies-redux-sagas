@@ -6,7 +6,7 @@ import { useParams } from 'react-router-dom/cjs/react-router-dom.min';
 
 function AddMovie() {
 
-    let mode = null;
+    let mode;
     const { id } = useParams();
     const currentMovie = id;
     if (currentMovie === 'add') {
@@ -132,7 +132,7 @@ function AddMovie() {
 
       return (
           <>
-              <h2>Add a Movie</h2>
+              <h2>{ mode === 'add' ? 'Add': 'Edit } a Movie</h2>
               <form onSubmit={(e) => {handleAddSaveMovie(e)}} 
                     encType="multipart/form-data">
                   <TextField id="item-title" 
